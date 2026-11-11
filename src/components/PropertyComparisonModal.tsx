@@ -33,11 +33,11 @@ export const PropertyComparisonModal: React.FC<PropertyComparisonModalProps> = (
               <Scale className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black text-white">
-                مقارنة العقارات جنبًا إلى جنب ({properties.length} عقارات)
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                مقارنة الوحدات المختارة ({properties.length})
               </h2>
               <p className="text-xs text-slate-400">
-                قارن بين الأسعار، المساحات، المواقع، والمزايا لاختيار الأنسب لك
+                مقارنة الأسعار والمساحات والمواصفات الميدانية.
               </p>
             </div>
           </div>

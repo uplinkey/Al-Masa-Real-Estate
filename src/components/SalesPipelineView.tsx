@@ -5,9 +5,10 @@ import { CustomerLead, LeadStatus } from '../types';
 interface SalesPipelineViewProps {
   clients: CustomerLead[];
   onUpdateStatus: (id: string, newStatus: LeadStatus) => void;
+  isDarkMode?: boolean;
 }
 
-export const SalesPipelineView: React.FC<SalesPipelineViewProps> = ({ clients, onUpdateStatus }) => {
+export const SalesPipelineView: React.FC<SalesPipelineViewProps> = ({ clients, onUpdateStatus, isDarkMode = true }) => {
   const pipelineStages: { id: LeadStatus; label: string; color: string }[] = [
     { id: 'عميل جديد', label: 'عميل جديد', color: 'border-blue-500 text-blue-400 bg-blue-500/10' },
     { id: 'تم التواصل', label: 'تم التواصل', color: 'border-indigo-500 text-indigo-400 bg-indigo-500/10' },
@@ -26,14 +27,14 @@ export const SalesPipelineView: React.FC<SalesPipelineViewProps> = ({ clients, o
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            <Kanban className="w-6 h-6 text-amber-400" />
-            <span>لوحة خط المبيعات (Sales Pipeline Kanban)</span>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <Kanban className="w-5 h-5 text-amber-400" />
+            <span>مراحل ومسار المبيعات</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            متابعة سريعة لحركة جميع الفرص البيعية عبر 8 مراحل أساسية، تحديث مرحلة الصفقة بضغطة واحدة، ومتابعة معدل إغلاق المبيعات.
+            متابعة حركة الفرص البيعية وتحديث مراحل الصفقات ومعدل الإغلاق المالي.
           </p>
         </div>
       </div>

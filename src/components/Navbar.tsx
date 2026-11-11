@@ -61,16 +61,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className={`h-16 border-b flex items-center justify-between px-4 lg:px-8 backdrop-blur-md z-30 flex-shrink-0 sticky top-0 w-full transition-colors duration-200 shadow-md ${
+    <header className={`h-16 border-b flex items-center justify-between px-4 lg:px-8 backdrop-blur-md z-30 flex-shrink-0 sticky top-0 w-full transition-colors duration-200 shadow-xs ${
       darkMode
         ? 'bg-[#0F172A]/90 border-slate-800 text-slate-100'
-        : 'bg-white/95 border-slate-200 text-slate-800'
+        : 'bg-white/95 border-[#CBD5E1] text-[#0F172A]'
     }`}>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-          <span className={`cursor-pointer transition-colors ${darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}>الرئيسية</span>
+          <span className={`cursor-pointer transition-colors ${darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-[#0F172A]'}`}>الرئيسية</span>
           <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>/</span>
-          <span className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'} accent-gold`}>لوحة القيادة</span>
+          <span className={`font-bold ${darkMode ? 'text-white' : 'text-[#0F172A]'} accent-gold`}>لوحة التحكم</span>
         </div>
       </div>
 
@@ -85,31 +85,31 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={`py-1.5 pr-4 pl-9 text-xs w-48 lg:w-64 rounded-full border focus:outline-none transition-all ${
               darkMode
                 ? 'bg-slate-900 border-slate-700/80 focus:border-gold text-slate-200 placeholder-slate-400'
-                : 'bg-slate-100 border-slate-300 focus:border-amber-500 text-slate-800 placeholder-slate-400'
+                : 'bg-white border-[#CBD5E1] focus:border-[#2563EB] text-[#0F172A] placeholder-[#64748B]'
             }`}
           />
           <Search className={`absolute left-3 top-2 w-3.5 h-3.5 pointer-events-none ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
         </div>
 
-        {/* Theme Switcher Button (☀️ نهار / 🌙 ليل) */}
+        {/* Theme Switcher Button */}
         <button
           onClick={onToggleDarkMode}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
             darkMode
               ? 'bg-slate-800/90 border-slate-700 text-amber-300 hover:bg-slate-700 hover:border-gold/50'
-              : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 shadow-sm'
+              : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 shadow-xs'
           }`}
           title={darkMode ? 'التحويل للوضع النهاري' : 'التحويل للوضع الليلي'}
         >
           {darkMode ? (
             <>
               <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
-              <span className="hidden sm:inline">نهار</span>
+              <span className="hidden sm:inline">نهاري</span>
             </>
           ) : (
             <>
               <Moon className="w-4 h-4 text-slate-700" />
-              <span className="hidden sm:inline">ليل</span>
+              <span className="hidden sm:inline">ليلي</span>
             </>
           )}
         </button>
@@ -139,15 +139,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 accent-gold" />
-            <span>مساعد AI</span>
+            <span>المساعد الذكي</span>
           </button>
 
           <button
             onClick={onOpenNewProperty}
-            className="px-3.5 py-1.5 bg-gold text-slate-950 text-xs font-bold rounded-lg hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/10 cursor-pointer flex items-center gap-1"
+            className="px-3.5 py-1.5 bg-gold text-slate-950 text-xs font-bold rounded-lg hover:bg-amber-400 transition-colors shadow-xs cursor-pointer flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>إضافة عقار +</span>
+            <span>إضافة وحدة</span>
           </button>
 
           {/* Notifications Dropdown */}
@@ -310,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider ${
                   darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-50 text-slate-500'
                 }`}>
-                  اختر الدور الوظيفي (RBAC)
+                  اختر الدور الوظيفي والصلاحيات
                 </div>
                 <div className="max-h-72 overflow-y-auto">
                   {USER_ROLES.map((role) => (

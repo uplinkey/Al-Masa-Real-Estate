@@ -558,23 +558,23 @@ export const PropertyManagementView: React.FC<PropertyManagementViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            <Building className="w-6 h-6 text-amber-400" />
-            <span>إدارة العقارات والوحدات المتاحة</span>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <Building className="w-5 h-5 text-amber-400" />
+            <span>إدارة الوحدات والعقارات</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            إدارة شاملة لجميع أنواع العقارات بمصر، حساب العمولات التلقائي 2.5%، واستخراج بطاقات المعاينة برمز QR.
+            تسجيل ومتابعة العقارات وإدارة الأسعار وتوثيق المعاينات والعمولات.
           </p>
         </div>
 
         <button
           onClick={handleOpenNew}
-          className="px-4 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto"
+          className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-center shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>إضافة عقار جديد</span>
+          <span>إضافة وحدة</span>
         </button>
       </div>
 

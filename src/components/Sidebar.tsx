@@ -54,18 +54,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const safeCounts = counts || { properties: 0, clients: 0, viewings: 0, tasks: 0 };
 
   const navItems: { id: SidebarTab; label: string; icon: React.ReactNode; badge?: number; highlight?: boolean }[] = [
-    { id: 'dashboard', label: 'لوحة التحكم التنفيذية', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'properties', label: 'إدارة العقارات والوحدات', icon: <Building className="w-4 h-4" />, badge: safeCounts.properties },
-    { id: 'clients', label: 'CRM سجل العملاء والطلبات', icon: <Users className="w-4 h-4" />, badge: safeCounts.clients },
-    { id: 'pipeline', label: 'خط المبيعات (Kanban Board)', icon: <Kanban className="w-4 h-4" /> },
-    { id: 'owners', label: 'CRM سجل ملاك العقارات', icon: <UserCheck2 className="w-4 h-4" /> },
-    { id: 'viewings', label: 'تقويم وجدول المعاينات', icon: <CalendarCheck className="w-4 h-4" />, badge: safeCounts.viewings },
-    { id: 'marketing', label: 'إدارة التسويق وتوافر الوحدات', icon: <Megaphone className="w-4 h-4" /> },
+    { id: 'dashboard', label: 'لوحة التحكم', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'properties', label: 'الوحدات والعقارات', icon: <Building className="w-4 h-4" />, badge: safeCounts.properties },
+    { id: 'clients', label: 'سجل العملاء والطلبات', icon: <Users className="w-4 h-4" />, badge: safeCounts.clients },
+    { id: 'pipeline', label: 'مراحل المبيعات', icon: <Kanban className="w-4 h-4" /> },
+    { id: 'owners', label: 'سجل ملاك العقارات', icon: <UserCheck2 className="w-4 h-4" /> },
+    { id: 'viewings', label: 'جدول المعاينات', icon: <CalendarCheck className="w-4 h-4" />, badge: safeCounts.viewings },
+    { id: 'marketing', label: 'التسويق وتوافر الوحدات', icon: <Megaphone className="w-4 h-4" /> },
     { id: 'partners' as any, label: 'الشركات المتعاونة والعمولات', icon: <Handshake className="w-4 h-4 text-indigo-400" /> },
-    { id: 'tasks', label: 'إدارة المهام والمتابعة', icon: <CheckSquare className="w-4 h-4" />, badge: safeCounts.tasks },
+    { id: 'tasks', label: 'المهام والمتابعة', icon: <CheckSquare className="w-4 h-4" />, badge: safeCounts.tasks },
     { id: 'accounting', label: 'العمولات والحسابات المالية', icon: <BadgePercent className="w-4 h-4" /> },
-    { id: 'rbac', label: 'إدارة الصلاحيات المركزية (RBAC)', icon: <ShieldAlert className="w-4 h-4 text-rose-400" /> },
-    { id: 'ai_assistant', label: 'مساعد الذكاء الاصطناعي', icon: <Sparkles className="w-4 h-4" />, highlight: true },
+    { id: 'rbac', label: 'إدارة الصلاحيات والمستخدمين', icon: <ShieldAlert className="w-4 h-4 text-rose-400" /> },
+    { id: 'ai_assistant', label: 'المساعد الذكي', icon: <Sparkles className="w-4 h-4" />, highlight: true },
     { id: 'public_website', label: 'الموقع العام للتسويق', icon: <Globe2 className="w-4 h-4" /> },
   ];
 
@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'الرئيسية', icon: <LayoutDashboard className="w-5 h-5" /> },
     { id: 'properties', label: 'العقارات', icon: <Building className="w-5 h-5" /> },
     { id: 'clients', label: 'العملاء', icon: <Users className="w-5 h-5" /> },
-    { id: 'ai_assistant', label: 'مساعد AI', icon: <Sparkles className="w-5 h-5 text-amber-500" /> },
+    { id: 'ai_assistant', label: 'المساعد الذكي', icon: <Sparkles className="w-5 h-5 text-amber-500" /> },
   ];
 
   const handleMobileSelect = (tabId: string) => {
@@ -87,29 +87,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside className={`w-64 border-l flex flex-col justify-between hidden md:flex shrink-0 z-20 transition-colors duration-200 ${
         isDarkMode
           ? 'bg-[#0F172A] border-slate-800 text-slate-300'
-          : 'bg-white border-slate-200 text-slate-700 shadow-sm'
+          : 'bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A] shadow-sm'
       }`}>
         {/* Brand Header */}
-        <div className={`p-5 border-b flex flex-col items-center gap-2 ${
-          isDarkMode ? 'border-slate-800' : 'border-slate-100'
+        <div className={`p-4 border-b flex flex-col items-center gap-1.5 ${
+          isDarkMode ? 'border-slate-800' : 'border-[#CBD5E1]'
         }`}>
-          <div className={`w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center font-black text-xl accent-gold gold-glow ${
+          <div className={`w-11 h-11 rounded-full border-2 border-gold flex items-center justify-center font-black text-lg accent-gold gold-glow ${
             isDarkMode ? 'bg-slate-900/80' : 'bg-amber-50'
           }`}>
             أ
           </div>
           <div className="text-center">
-            <h1 className="text-lg font-bold tracking-tight accent-gold gold-glow">الماسة العقارية</h1>
-            <p className={`text-[10px] uppercase tracking-widest font-semibold ${
+            <h1 className="text-base font-bold tracking-tight accent-gold gold-glow">الماسة العقارية</h1>
+            <p className={`text-[10px] font-semibold ${
               isDarkMode ? 'text-slate-400' : 'text-slate-500'
-            }`}>Real Estate CRM</p>
+            }`}>إدارة وتسويق العقارات</p>
           </div>
         </div>
 
         {/* Navigation items */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <div className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest ${
-            isDarkMode ? 'text-slate-500' : 'text-slate-400'
+          <div className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+            isDarkMode ? 'text-slate-500' : 'text-slate-500'
           }`}>
             أقسام النظام
           </div>
@@ -124,14 +124,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   isActive
                     ? isDarkMode
                       ? 'bg-slate-800/80 text-white border-r-4 border-gold shadow-md font-bold'
-                      : 'bg-amber-500/10 text-amber-800 border-r-4 border-gold shadow-sm font-bold'
+                      : 'bg-amber-500/10 text-amber-900 border-r-4 border-gold shadow-sm font-bold'
                     : item.highlight
                     ? isDarkMode
                       ? 'text-amber-300 hover:bg-slate-800/60 bg-amber-500/10 border border-amber-500/20'
-                      : 'text-amber-700 hover:bg-amber-50 bg-amber-500/10 border border-amber-500/30'
+                      : 'text-amber-800 hover:bg-amber-100/60 bg-amber-500/10 border border-amber-500/30'
                     : isDarkMode
                     ? 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    : 'text-slate-700 hover:bg-[#E2E8F0] hover:text-[#0F172A]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         ? 'bg-gold text-slate-950 font-bold'
                         : isDarkMode
                         ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                        : 'bg-white text-slate-700 border border-[#CBD5E1]'
                     }`}
                   >
                     {item.badge}
@@ -160,10 +160,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* User / Profile Footer */}
         <div className={`p-3.5 border-t ${
-          isDarkMode ? 'border-slate-800 bg-[#0B1120]/40' : 'border-slate-100 bg-slate-50/60'
+          isDarkMode ? 'border-slate-800 bg-[#0B1120]/40' : 'border-[#CBD5E1] bg-[#F1F5F9]'
         }`}>
           <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
-            isDarkMode ? 'bg-slate-800/40 border-slate-700/60' : 'bg-white border-slate-200 shadow-xs'
+            isDarkMode ? 'bg-slate-800/40 border-slate-700/60' : 'bg-white border-[#CBD5E1] shadow-xs'
           }`}>
             <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-gold/40 flex items-center justify-center text-[11px] font-black text-amber-600 dark:text-amber-400 shrink-0">
               ع/م

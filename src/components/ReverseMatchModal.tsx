@@ -107,15 +107,15 @@ export const ReverseMatchModal: React.FC<ReverseMatchModalProps> = ({
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-900 to-slate-900 text-white flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 bg-gradient-to-r from-blue-900 to-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-300">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-300">
               <Users className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg">المطابقة العكسية: العملاء الباحثون عن هذه الوحدة</h3>
-                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                <h3 className="font-bold text-lg">مطابقة العملاء المهتمين بالوحدة</h3>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-200 border border-blue-400/30">
                   {matches.length} طلب مطابق
                 </span>
               </div>
@@ -133,19 +133,19 @@ export const ReverseMatchModal: React.FC<ReverseMatchModalProps> = ({
         </div>
 
         {/* Action Bar */}
-        <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="px-6 py-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-4 text-sm">
-            <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+            <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={matches.length > 0 && selectedMatches.length === matches.length}
                 onChange={handleSelectAll}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
               />
               <span>تحديد الكل ({matches.length})</span>
             </label>
             {selectedMatches.length > 0 && (
-              <span className="text-xs font-semibold px-2 py-1 bg-indigo-100 text-indigo-800 rounded-md">
+              <span className="text-xs font-semibold px-2.5 py-1 bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 rounded-lg">
                 تم تحديد {selectedMatches.length} عميل
               </span>
             )}

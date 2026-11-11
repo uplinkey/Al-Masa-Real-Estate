@@ -8,9 +8,10 @@ interface OwnerCRMViewProps {
   properties: Property[];
   onAddOwner: (owner: Partial<PropertyOwner>) => void;
   currentUser?: any;
+  isDarkMode?: boolean;
 }
 
-export const OwnerCRMView: React.FC<OwnerCRMViewProps> = ({ owners, properties, onAddOwner, currentUser }) => {
+export const OwnerCRMView: React.FC<OwnerCRMViewProps> = ({ owners, properties, onAddOwner, currentUser, isDarkMode = true }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [followupModalOpen, setFollowupModalOpen] = useState(false);
   const [selectedPropForFollowup, setSelectedPropForFollowup] = useState<Property | null>(null);
@@ -34,23 +35,23 @@ export const OwnerCRMView: React.FC<OwnerCRMViewProps> = ({ owners, properties, 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            <UserCheck2 className="w-6 h-6 text-amber-400" />
-            <span>نظام CRM ملاك العقارات المباشرين</span>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <UserCheck2 className="w-5 h-5 text-amber-400" />
+            <span>سجل ملاك العقارات</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            إدارة بيانات الملاك بالكامل، الاتفاقيات الحصرية، الموظف المسؤول عن المتابعة، والتحقق من التعامل مع وسطاء آخرين.
+            إدارة بيانات الملاك والاتفاقيات الحصرية وتوثيق متابعات التواصل المباشر.
           </p>
         </div>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2"
+          className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 self-start sm:self-center"
         >
           <Plus className="w-4 h-4" />
-          <span>إضافة مالك جديد</span>
+          <span>إضافة مالك</span>
         </button>
       </div>
 

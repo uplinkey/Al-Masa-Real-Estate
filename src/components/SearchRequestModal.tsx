@@ -175,8 +175,8 @@ export const SearchRequestModal: React.FC<SearchRequestModalProps> = ({
               <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">
-                {requestToEdit ? 'تعديل طلب البحث العقاري ومطابقة التفضيلات' : 'تسجيل طلب بحث عقاري جديد للعميل'}
+              <h2 className="text-base sm:text-lg font-bold">
+                {requestToEdit ? 'تعديل طلب البحث' : 'تسجيل طلب بحث جديد'}
               </h2>
               <p className="text-xs text-emerald-100">
                 العميل: {client.name} · هاتف: {client.phone}

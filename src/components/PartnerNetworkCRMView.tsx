@@ -204,16 +204,16 @@ export const PartnerNetworkCRMView: React.FC<PartnerNetworkCRMViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Handshake className="w-6 h-6" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <Handshake className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-black">نظام التعاون العقاري وإدارة الصفقات وتوزيع العمولات</h2>
-              <p className="text-xs text-slate-300">
-                منظومة متكاملة للشراكات التجارية، عزل حسابات الشركات، توزيع الحصص، رقابة التحصيل، وصرف مستحقات المسوقين والشركاء.
+              <h2 className="text-lg sm:text-xl font-bold">الشركات المتعاونة وتوزيع العمولات</h2>
+              <p className="text-xs text-slate-300 mt-0.5">
+                إدارة الشراكات العقارية ومتابعة التحصيل وصرف نسب العمولات.
               </p>
             </div>
           </div>
@@ -222,17 +222,17 @@ export const PartnerNetworkCRMView: React.FC<PartnerNetworkCRMViewProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setShowAddPartnerModal(true)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>تسجيل شركة متعاونة</span>
+            <span>إضافة شركة</span>
           </button>
           <button
             onClick={() => setShowNewDealModal(true)}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
             <FileCheck className="w-4 h-4" />
-            <span>تسجيل صفقة جديدة وتوزيع عمولتها</span>
+            <span>إضافة صفقة</span>
           </button>
         </div>
       </div>

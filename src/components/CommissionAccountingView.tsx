@@ -5,9 +5,10 @@ import { CommissionRecord, AccountingTransaction } from '../types';
 interface CommissionAccountingViewProps {
   commissions: CommissionRecord[];
   transactions: AccountingTransaction[];
+  isDarkMode?: boolean;
 }
 
-export const CommissionAccountingView: React.FC<CommissionAccountingViewProps> = ({ commissions, transactions }) => {
+export const CommissionAccountingView: React.FC<CommissionAccountingViewProps> = ({ commissions, transactions, isDarkMode = true }) => {
   const [selectedTab, setSelectedTab] = useState<'commissions' | 'transactions'>('commissions');
   const [calcPrice, setCalcPrice] = useState<number>(8000000);
   const [calcPct, setCalcPct] = useState<number>(2.5);
@@ -30,14 +31,14 @@ export const CommissionAccountingView: React.FC<CommissionAccountingViewProps> =
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            <BadgePercent className="w-6 h-6 text-amber-400" />
-            <span>نظام حسابات العمولات والحسابات المالية ERP</span>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <BadgePercent className="w-5 h-5 text-amber-400" />
+            <span>العمولات والحسابات المالية</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            حساب عمولة الشركة تلقائياً (الافتراضي 2.5% مع إمكانية التعديل)، توزيع حصص موظفي المبيعات والمدراء، وإصدار إيصالات السداد.
+            حساب عمولات الصفقات وتوزيع حصص المبيعات ومتابعة حركة الخزينة.
           </p>
         </div>
 

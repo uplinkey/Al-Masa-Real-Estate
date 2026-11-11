@@ -49,6 +49,7 @@ interface PublicWebsiteViewProps {
   }) => void;
   onRequestCallback?: (data: { name: string; phone: string; preferredTime: string; notes?: string }) => void;
   onAddOwnerListing?: (ownerData: any) => void;
+  isDarkMode?: boolean;
 }
 
 export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
@@ -57,6 +58,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
   onBookViewing,
   onRequestCallback,
   onAddOwnerListing,
+  isDarkMode = true,
 }) => {
   // Modal states
   const [selectedPropertyForDetails, setSelectedPropertyForDetails] = useState<Property | null>(null);

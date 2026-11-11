@@ -121,7 +121,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Executive Welcome & Quick Actions Bar */}
-      <div className={`p-5 rounded-2xl border transition-all shadow-sm ${
+      <div className={`p-4 sm:p-5 rounded-2xl border transition-all shadow-xs ${
         isDarkMode
           ? 'bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-950 border-slate-800'
           : 'bg-gradient-to-r from-amber-500/10 via-white to-amber-500/5 border-amber-200/60'
@@ -129,28 +129,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gold/20 text-amber-600 dark:text-amber-300 border border-gold/30">
-                لوحة القيادة التنفيذية
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gold/20 text-amber-700 dark:text-amber-300 border border-gold/30">
+                لوحة التحكم العامة
               </span>
               <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                تحديث حي مباشر
+                متابعة حية ومباشرة
               </span>
             </div>
-            <h2 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-              مرحباً بكم: م. أحمد عيسوي (المدير التنفيذي) & أ. السيد محسن (المدير العام) 👋
+            <h2 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+              مرحباً بكم: م. أحمد عيسوي & أ. السيد محسن
             </h2>
             <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-              لوحة المتابعة التنفيذية الشاملة للأداء العقاري، الحسابات، والمبيعات لشركة الماسة.
+              متابعة الأداء العام للعقارات والعملاء والصفقات والحسابات المالية.
             </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={onOpenNewProperty}
-              className="px-3.5 py-2 bg-gold hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-gold hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>إضافة عقار جديد</span>
+              <span>إضافة وحدة</span>
             </button>
 
             <button
@@ -162,7 +162,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               }`}
             >
               <Users className="w-4 h-4 text-blue-500" />
-              <span>عميل جديد</span>
+              <span>إضافة عميل</span>
             </button>
 
             <button
@@ -174,7 +174,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               }`}
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>مساعد AI</span>
+              <span>المساعد الذكي</span>
             </button>
           </div>
         </div>
@@ -201,8 +201,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className={`text-sm font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  نظام التنبيهات الآلي للمعاينات الميدانية (Viewing Notification & Dispatch Center)
+                <h3 className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  تنبيهات المعاينات الميدانية
                 </h3>
                 {criticalAlerts.length > 0 && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
@@ -397,7 +397,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1 font-bold">
                   <span className={`flex items-center gap-1.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                     <span className="w-2 h-2 rounded-full bg-slate-400" />
-                    1. عملاء جدد (Lead Intake)
+                    1. تسجيل العملاء الجدد
                   </span>
                   <span className="text-slate-400 font-mono">540 عميل (100%)</span>
                 </div>
@@ -411,7 +411,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1 font-bold">
                   <span className={`flex items-center gap-1.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                     <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    2. الاتصال والتأهيل (Contacted & Qualified)
+                    2. التواصل وتحديد المتطلبات
                   </span>
                   <span className="text-blue-500 font-mono">320 عميل (59.2%)</span>
                 </div>
@@ -425,7 +425,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1 font-bold">
                   <span className={`flex items-center gap-1.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                     <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    3. تنفيذ المعاينات الميدانية (Viewings Done)
+                    3. إتمام المعاينات الميدانية
                   </span>
                   <span className="text-amber-500 font-mono">124 معاينة (22.9%)</span>
                 </div>
@@ -439,7 +439,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1 font-bold">
                   <span className={`flex items-center gap-1.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    4. إغلاق الصفقات والتوقيع (Deals Won)
+                    4. إتمام الصفقات وتوقيع العقود
                   </span>
                   <span className="text-emerald-500 font-mono">42 صفقة (7.7%)</span>
                 </div>

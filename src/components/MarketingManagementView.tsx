@@ -51,6 +51,7 @@ interface MarketingManagementViewProps {
   clients?: CustomerLead[];
   currentUser?: any;
   onRefreshData?: () => void;
+  isDarkMode?: boolean;
 }
 
 const AVAILABILITY_COLORS: Record<UnitAvailabilityStatus, { text: string; bg: string; border: string }> = {
@@ -73,6 +74,7 @@ export const MarketingManagementView: React.FC<MarketingManagementViewProps> = (
   clients = [],
   currentUser,
   onRefreshData,
+  isDarkMode = true,
 }) => {
   // Main Sub-tab selection
   const [activeSubTab, setActiveSubTab] = useState<
@@ -228,19 +230,14 @@ export const MarketingManagementView: React.FC<MarketingManagementViewProps> = (
   return (
     <div className="space-y-6">
       {/* Top Executive Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-black text-white flex items-center gap-2.5">
-              <Megaphone className="w-6 h-6 text-amber-400" />
-              <span>لوحة إدارة التسويق والمسوقين وتوافر الوحدات</span>
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/15 text-amber-400 border border-amber-500/30">
-              Enterprise Hub
-            </span>
-          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-amber-400" />
+            <span>إدارة التسويق وتوافر الوحدات</span>
+          </h2>
           <p className="text-xs text-slate-400 mt-1">
-            متابعة حية لحالات توافر الوحدات (9 حالات)، سريان التأكيد، إسناد المسوقين، تحقيقات الصفقات الخارجية، وأرشفة الوحدات بعد 24 ساعة.
+            متابعة توافر الوحدات وسريان التأكيد وإسناد المهام للمسوقين والتحقق من الصفقات.
           </p>
         </div>
 
@@ -250,10 +247,10 @@ export const MarketingManagementView: React.FC<MarketingManagementViewProps> = (
               setSelectedPropForFollowup(null);
               setFollowupModalOpen(true);
             }}
-            className="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer flex items-center gap-1.5"
           >
             <Phone className="w-4 h-4" />
-            <span>تسجيل متابعة مالك</span>
+            <span>تسجيل متابعة</span>
           </button>
 
           <button
@@ -264,7 +261,7 @@ export const MarketingManagementView: React.FC<MarketingManagementViewProps> = (
             className="px-3 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer flex items-center gap-1.5"
           >
             <CheckSquare className="w-4 h-4 text-amber-400" />
-            <span>إنشاء مهمة متابعة</span>
+            <span>إنشاء مهمة</span>
           </button>
 
           <button

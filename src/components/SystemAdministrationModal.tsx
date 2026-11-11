@@ -424,16 +424,16 @@ export const SystemAdministrationModal: React.FC<SystemAdministrationModalProps>
                   <span className="text-sm font-black text-amber-500 font-mono">{healthInfo.sqliteVersion}</span>
                 </div>
                 <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="block text-[10px] text-slate-400">وضع المحرك (Journal)</span>
-                  <span className="text-sm font-black text-emerald-500 font-mono">WAL (Write-Ahead)</span>
+                  <span className="block text-[10px] text-slate-400">نمط الكتابة المباشرة</span>
+                  <span className="text-sm font-bold text-emerald-500">مفعل وسريع (WAL)</span>
                 </div>
                 <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <span className="block text-[10px] text-slate-400">المفاتيح الأجنبية</span>
-                  <span className="text-sm font-black text-blue-500 font-mono">مفعلة (ENFORCED)</span>
+                  <span className="block text-[10px] text-slate-400">الروابط والمفاتيح</span>
+                  <span className="text-sm font-bold text-blue-500">مفعلة بالكامل</span>
                 </div>
                 <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                   <span className="block text-[10px] text-slate-400">حماية الاستعلامات</span>
-                  <span className="text-sm font-black text-emerald-500 font-mono">Prepared Statements (100%)</span>
+                  <span className="text-sm font-bold text-emerald-500">حماية تامة من الاختراق</span>
                 </div>
               </div>
 

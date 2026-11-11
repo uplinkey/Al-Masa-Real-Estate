@@ -52,7 +52,15 @@ export default function App() {
   const [userRole, setUserRole] = useState<UserRole>('ADMIN');
   const [globalSearch, setGlobalSearch] = useState<string>('');
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('almasa_theme');
+      if (saved) return saved === 'dark';
+    } catch {
+      // ignore
+    }
+    return true;
+  });
 
   // Core Data State
   const [properties, setProperties] = useState<Property[]>(INITIAL_PROPERTIES);
@@ -128,6 +136,30 @@ export default function App() {
   useEffect(() => {
     loadDatabaseData();
   }, [loadDatabaseData]);
+
+  // Synchronize theme on html (documentElement) and body with state and localStorage persistence
+  useEffect(() => {
+    try {
+      localStorage.setItem('almasa_theme', isDarkMode ? 'dark' : 'light');
+    } catch {
+      // ignore
+    }
+    const root = document.documentElement;
+    const body = document.body;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      root.classList.remove('light');
+      body.classList.add('dark');
+      body.classList.remove('light');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+      body.classList.add('light');
+      body.classList.remove('dark');
+      root.style.colorScheme = 'light';
+    }
+  }, [isDarkMode]);
 
   // Sync role to API client headers for centralized RBAC enforcement
   useEffect(() => {
@@ -427,7 +459,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-sans flex flex-col dir-rtl antialiased selection:bg-amber-500 selection:text-slate-950 transition-colors duration-200 ${
-      isDarkMode ? 'dark bg-[#0B1120] text-slate-100' : 'light bg-slate-50 text-slate-900'
+      isDarkMode ? 'dark bg-[#0B1120] text-slate-100' : 'light bg-[#F8FAFC] text-[#0F172A]'
     }`}>
       {/* Global Mini Toast Notifications (3 to 4 seconds auto-dismiss) */}
       <ToastContainer />
@@ -477,7 +509,7 @@ export default function App() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                قاعدة بيانات SQLite علائقية حية (Real Persistent Database)
+                قاعدة البيانات متصلة ومحدثة
               </span>
               <span className="hidden md:inline text-slate-400 dark:text-slate-500">•</span>
               <span className="hidden md:inline text-[11px] text-slate-500 dark:text-slate-400">
@@ -486,8 +518,8 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gold/15 text-amber-600 dark:text-amber-400 border border-gold/30">
-                Primary & Foreign Keys مفعلة
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gold/15 text-amber-700 dark:text-amber-400 border border-gold/30">
+                الربط العلائقي مفعل
               </span>
               <button
                 onClick={() => setIsSystemAdminOpen(true)}
@@ -547,6 +579,7 @@ export default function App() {
               onOpenQR={(p) => setQrProperty(p)}
               onOpenAIForProperty={(p) => setActiveTab('ai_assistant')}
               onRefreshData={loadDatabaseData}
+              isDarkMode={isDarkMode}
             />
           )}
 
@@ -558,15 +591,16 @@ export default function App() {
               onUpdateClientStatus={handleUpdateClientStatus}
               onAddCommunicationLog={handleAddCommunicationLog}
               onRefreshData={loadDatabaseData}
+              isDarkMode={isDarkMode}
             />
           )}
 
           {activeTab === 'pipeline' && (
-            <SalesPipelineView clients={clients} onUpdateStatus={handleUpdateClientStatus} />
+            <SalesPipelineView clients={clients} onUpdateStatus={handleUpdateClientStatus} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'owners' && (
-            <OwnerCRMView owners={owners} properties={properties} onAddOwner={handleAddOwner} />
+            <OwnerCRMView owners={owners} properties={properties} onAddOwner={handleAddOwner} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'viewings' && (
@@ -589,6 +623,7 @@ export default function App() {
               clients={clients}
               currentUser={{ role: userRole, name: userRole === 'ADMIN' ? 'المدير التنفيذي' : 'مسوق الماسة' }}
               onRefreshData={loadDatabaseData}
+              isDarkMode={isDarkMode}
             />
           )}
 
@@ -605,11 +640,11 @@ export default function App() {
           )}
 
           {activeTab === 'tasks' && (
-            <TaskManagementView tasks={tasks} onAddTask={handleAddTask} onUpdateTaskStatus={handleUpdateTaskStatus} />
+            <TaskManagementView tasks={tasks} onAddTask={handleAddTask} onUpdateTaskStatus={handleUpdateTaskStatus} isDarkMode={isDarkMode} />
           )}
 
           {(activeTab === 'commissions' || activeTab === 'accounting') && (
-            <CommissionAccountingView commissions={commissions} transactions={transactions} />
+            <CommissionAccountingView commissions={commissions} transactions={transactions} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'rbac' && (
@@ -617,7 +652,7 @@ export default function App() {
           )}
 
           {(activeTab === 'ai-assistant' || activeTab === 'ai_assistant') && (
-            <AIAssistantView properties={properties} clients={clients} />
+            <AIAssistantView properties={properties} clients={clients} isDarkMode={isDarkMode} />
           )}
 
           {(activeTab === 'public-portal' || activeTab === 'public_website') && (
@@ -627,13 +662,14 @@ export default function App() {
               onBookViewing={handleCustomerBookViewing}
               onRequestCallback={handleCustomerRequestCallback}
               onAddOwnerListing={handleAddOwner}
+              isDarkMode={isDarkMode}
             />
           )}
         </main>
       </div>
 
       {/* QR Code Printable Modal */}
-      <QRCodeModal property={qrProperty} onClose={() => setQrProperty(null)} />
+      <QRCodeModal property={qrProperty} onClose={() => setQrProperty(null)} isDarkMode={isDarkMode} />
 
       {/* System Administration & Audit Modal */}
       <SystemAdministrationModal

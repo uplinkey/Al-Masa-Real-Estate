@@ -134,8 +134,8 @@ export const DealClosingModal: React.FC<DealClosingModalProps> = ({
               <Award className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-black text-white">اعتماد صفقة بيع / تأجير رسمية (Deal Closing)</h3>
-              <p className="text-[11px] text-slate-400">توثيق العقد، توزيع العمولات، وأرشفة العقار بعد 24 ساعة</p>
+              <h3 className="text-base font-bold text-white">اعتماد وإغلاق الصفقة</h3>
+              <p className="text-[11px] text-slate-400">توثيق العقد وتوزيع العمولات وأرشفة العقار.</p>
             </div>
           </div>
           <button
@@ -228,7 +228,7 @@ export const DealClosingModal: React.FC<DealClosingModalProps> = ({
           <div className="p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl space-y-3">
             <h4 className="font-bold text-slate-200 text-xs flex items-center justify-between">
               <span>بيانات العميل المشتري / المستأجر:</span>
-              <span className="text-[10px] text-amber-400">يمكن الاختيار من CRM أو إدخال عميل جديد</span>
+              <span className="text-[10px] text-amber-400">يمكن الاختيار من سجل العملاء أو إدخال عميل جديد</span>
             </h4>
 
             <div>

@@ -45,18 +45,23 @@ async function startServer() {
     next();
   });
 
-  // Authentication & Session Context Middleware (Supports Bearer Token or active Role switcher)
+  // Authentication & Session Context Middleware
   app.use((req: any, res, next) => {
     const authHeader = req.headers.authorization || req.headers['x-auth-token'];
+    let user = null;
+
     if (authHeader) {
       const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
         ? authHeader.substring(7)
         : (authHeader as string);
-      req.user = repo.getUserByToken(token);
+      user = repo.getUserByToken(token);
     } else if (req.headers['x-user-id']) {
-      req.user = repo.getUserById(req.headers['x-user-id'] as string);
-    } else if (req.headers['x-user-role']) {
-      const role = req.headers['x-user-role'] as string;
+      user = repo.getUserById(req.headers['x-user-id'] as string);
+    }
+
+    // Role preview / simulation mode (Strictly restricted to Admin / Super Admin)
+    const previewRole = req.headers['x-preview-role'] as string;
+    if (previewRole && user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
       const roleMap: Record<string, string> = {
         ADMIN: 'usr-admin',
         GENERAL_MANAGER: 'usr-exec',
@@ -64,18 +69,44 @@ async function startServer() {
         SALES_AGENT: 'usr-sales-agent',
         ACCOUNTANT: 'usr-acct',
       };
-      const userId = roleMap[role] || 'usr-sales-agent';
-      req.user = repo.getUserById(userId);
-    } else {
-      req.user = repo.getUserById('usr-admin'); // Default active context
+      const simulatedUserId = roleMap[previewRole];
+      if (simulatedUserId) {
+        const simulatedUser = repo.getUserById(simulatedUserId);
+        if (simulatedUser) {
+          req.user = simulatedUser;
+          req.isPreviewMode = true;
+          return next();
+        }
+      }
     }
+
+    // If no token provided, fallback to admin in dev if specifically requested or unauthenticated
+    if (!user && req.headers['x-user-role']) {
+      const roleMap: Record<string, string> = {
+        ADMIN: 'usr-admin',
+        GENERAL_MANAGER: 'usr-exec',
+        SALES_MANAGER: 'usr-sales-mgr',
+        SALES_AGENT: 'usr-sales-agent',
+        ACCOUNTANT: 'usr-acct',
+      };
+      user = repo.getUserById(roleMap[req.headers['x-user-role'] as string] || 'usr-sales-agent');
+    }
+
+    req.user = user;
     next();
   });
 
   // Centralized Permission Verification Middleware (Deny-By-Default)
   const requirePermission = (module: string, action: string) => {
     return (req: any, res: any, next: any) => {
-      const user = req.user || repo.getUserById('usr-admin');
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({
+          error: 'يرجى تسجيل الدخول للوصول إلى هذا القسم (401 Unauthorized)',
+          requiredPermission: { module, action },
+        });
+      }
+
       const perm = repo.getUserPermission(user, module, action);
 
       if (!perm.allowed) {
@@ -117,7 +148,14 @@ async function startServer() {
     if (!req.user) {
       return res.status(401).json({ error: 'غير مسجل الدخول' });
     }
-    res.json(req.user);
+    const perms = repo.getUserEffectivePermissions(req.user);
+    res.json({
+      user: req.user,
+      allowedTabs: perms.allowedTabs,
+      permissions: perms.permissions,
+      dataScope: perms.dataScope,
+      isPreviewMode: Boolean(req.isPreviewMode),
+    });
   });
 
   app.post('/api/auth/logout', (req: any, res) => {
@@ -129,6 +167,57 @@ async function startServer() {
       repo.logoutUser(token);
     }
     res.json({ success: true, message: 'تم تسجيل الخروج بنجاح' });
+  });
+
+  // User Self Password Change
+  app.post('/api/auth/change-password', (req: any, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'يرجى تسجيل الدخول أولاً' });
+    }
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'كلمة المرور الحالية وكلمة المرور الجديدة مطلوبة' });
+    }
+    const result = repo.changeUserPassword(req.user.id, currentPassword, newPassword, req.ip || '127.0.0.1');
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    res.json(result);
+  });
+
+  // Forgot Password: Request link or OTP
+  app.post('/api/auth/forgot-password/request', (req: any, res) => {
+    const { identifier, resetType = 'email' } = req.body;
+    if (!identifier) {
+      return res.status(400).json({ error: 'يرجى إدخال اسم المستخدم، البريد، أو رقم الهاتف' });
+    }
+    const result = repo.requestPasswordReset(identifier, resetType, req.ip || '127.0.0.1');
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    res.json(result);
+  });
+
+  // Forgot Password: Verify & Reset
+  app.post('/api/auth/forgot-password/reset', (req: any, res) => {
+    const { tokenOrCode, newPassword } = req.body;
+    if (!tokenOrCode || !newPassword) {
+      return res.status(400).json({ error: 'كود التحقق وكلمة المرور الجديدة مطلوبان' });
+    }
+    const result = repo.verifyAndResetPassword(tokenOrCode, newPassword, req.ip || '127.0.0.1');
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    res.json(result);
+  });
+
+  // Current User Effective Permissions & Visible Navigation Tabs
+  app.get('/api/rbac/my-permissions', (req: any, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'غير مسجل الدخول' });
+    }
+    const perms = repo.getUserEffectivePermissions(req.user);
+    res.json(perms);
   });
 
   app.get('/api/auth/users', (req: any, res) => {
@@ -698,6 +787,48 @@ async function startServer() {
     }
   });
 
+  app.post('/api/rbac/users', requirePermission('roles', 'manage_employees'), (req: any, res) => {
+    try {
+      const result = repo.adminCreateUser(req.body, req.user);
+      if (!result.success) return res.status(400).json(result);
+      res.status(201).json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: 'فشل إنشاء حساب المستخدم' });
+    }
+  });
+
+  app.post('/api/rbac/users/:id/reset-password', requirePermission('roles', 'manage_employees'), (req: any, res) => {
+    try {
+      const { newPassword, mustChangePassword = true } = req.body;
+      const result = repo.adminResetUserPassword(req.params.id, newPassword, Boolean(mustChangePassword), req.user);
+      if (!result.success) return res.status(400).json(result);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: 'فشل إعادة تعيين كلمة المرور' });
+    }
+  });
+
+  app.post('/api/rbac/users/:id/toggle-status', requirePermission('roles', 'manage_employees'), (req: any, res) => {
+    try {
+      const { active } = req.body;
+      const result = repo.adminToggleUserStatus(req.params.id, Boolean(active), req.user);
+      if (!result.success) return res.status(400).json(result);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: 'فشل تغيير حالة الحساب' });
+    }
+  });
+
+  app.post('/api/rbac/users/:id/revoke-sessions', requirePermission('roles', 'manage_employees'), (req: any, res) => {
+    try {
+      const result = repo.adminRevokeUserSessions(req.params.id, req.user);
+      if (!result.success) return res.status(400).json(result);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: 'فشل إلغاء الجلسات النشطة' });
+    }
+  });
+
   // --------------------------------------------------------------------------
   // Owners CRM API
   // --------------------------------------------------------------------------
@@ -1030,9 +1161,9 @@ async function startServer() {
   // --------------------------------------------------------------------------
   // Customer CRM 360 & Leads API
   // --------------------------------------------------------------------------
-  app.get('/api/clients', (req, res) => {
+  app.get('/api/clients', requirePermission('clients', 'view'), (req: any, res) => {
     try {
-      const clients = repo.getClients();
+      const clients = repo.getClients(req.user, req.permissionScope);
       res.json(clients);
     } catch (err: any) {
       res.status(500).json({ error: 'فشل استرجاع بيانات العملاء' });
@@ -1340,9 +1471,9 @@ async function startServer() {
   // --------------------------------------------------------------------------
   // Field Viewings API
   // --------------------------------------------------------------------------
-  app.get('/api/viewings', (req, res) => {
+  app.get('/api/viewings', requirePermission('viewings', 'view'), (req: any, res) => {
     try {
-      const viewings = repo.getViewings();
+      const viewings = repo.getViewings(req.user, req.permissionScope);
       res.json(viewings);
     } catch (err: any) {
       res.status(500).json({ error: 'Failed to get viewings' });
@@ -1452,16 +1583,16 @@ async function startServer() {
   // --------------------------------------------------------------------------
   // Commissions & Contracts API
   // --------------------------------------------------------------------------
-  app.get('/api/commissions', (req, res) => {
+  app.get('/api/commissions', requirePermission('commissions', 'view'), (req: any, res) => {
     try {
-      const commissions = repo.getCommissions();
+      const commissions = repo.getCommissions(req.user, req.permissionScope);
       res.json(commissions);
     } catch (err: any) {
       res.status(500).json({ error: 'Failed to get commissions' });
     }
   });
 
-  app.post('/api/commissions', (req: any, res) => {
+  app.post('/api/commissions', requirePermission('commissions', 'create'), (req: any, res) => {
     try {
       const created = repo.createCommission(req.body);
       repo.recordAuditLog({
@@ -1482,7 +1613,7 @@ async function startServer() {
   // --------------------------------------------------------------------------
   // Accounting Transactions API
   // --------------------------------------------------------------------------
-  app.get('/api/accounting', (req, res) => {
+  app.get('/api/accounting', requirePermission('financials', 'view'), (req: any, res) => {
     try {
       const txs = repo.getTransactions();
       res.json(txs);

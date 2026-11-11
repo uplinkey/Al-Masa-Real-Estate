@@ -132,7 +132,7 @@ const BASE_SOURCE_METRICS = [
   },
   {
     id: 'google',
-    name: 'إعلانات جوجل ومحركات البحث (SEO)',
+    name: 'إعلانات جوجل ومحركات البحث',
     shortName: 'إعلانات جوجل',
     color: '#10B981', // Emerald
     dealsCount: 6,
@@ -665,7 +665,7 @@ export const ExecutiveAnalyticsCharts: React.FC<ExecutiveAnalyticsChartsProps> =
                   </h3>
                 </div>
                 <p className={`text-[11px] mt-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  مقارنة صافي الأرباح، حجم المبيعات، ومعدل العائد (ROI)
+                  مقارنة صافي الأرباح وحجم المبيعات ومعدل العائد الاستثماري
                 </p>
               </div>
 
@@ -749,7 +749,7 @@ export const ExecutiveAnalyticsCharts: React.FC<ExecutiveAnalyticsChartsProps> =
                     : 'bg-slate-100 text-slate-700 border-slate-200'
                 }`}
               >
-                العائد على الإنفاق (ROI)
+                العائد على الإنفاق الإعلاني
               </button>
             </div>
           </div>

@@ -454,21 +454,21 @@ export const ViewingManagementView: React.FC<ViewingManagementViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header Banner */}
-      <div className={`p-5 rounded-2xl border shadow-lg ${
+      <div className={`p-4 sm:p-5 rounded-2xl border shadow-xs ${
         isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
       }`}>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                <CalendarCheck className="w-6 h-6" />
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                <CalendarCheck className="w-5 h-5" />
               </div>
               <div>
-                <h1 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  إدارة المعاينات الميدانية والتقويم المرئي (Calendar View)
+                <h1 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  جدول ومواعيد المعاينات
                 </h1>
                 <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  تخطيط وجدولة مواعيد المعاينات للمناديب، تتبع حركة السيارات والسائقين، ومنع تعارض المواعيد.
+                  جدولة المعاينات الميدانية وتوزيع مواعيد المستشارين وحركة السيارات.
                 </p>
               </div>
             </div>
@@ -483,12 +483,12 @@ export const ViewingManagementView: React.FC<ViewingManagementViewProps> = ({
                 onClick={() => setViewMode('month')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'month'
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-bold'
                     : isDarkMode
                     ? 'text-slate-300 hover:text-white'
                     : 'text-slate-700 hover:text-black'
                 }`}
-                title="عرض شهري كامل"
+                title="عرض شهري"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 <span>شهري</span>
@@ -498,12 +498,12 @@ export const ViewingManagementView: React.FC<ViewingManagementViewProps> = ({
                 onClick={() => setViewMode('week')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'week'
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-bold'
                     : isDarkMode
                     ? 'text-slate-300 hover:text-white'
                     : 'text-slate-700 hover:text-black'
                 }`}
-                title="عرض أسبوعي مفصل"
+                title="عرض أسبوعي"
               >
                 <CalendarRange className="w-3.5 h-3.5" />
                 <span>أسبوعي</span>
@@ -513,15 +513,15 @@ export const ViewingManagementView: React.FC<ViewingManagementViewProps> = ({
                 onClick={() => setViewMode('list')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'list'
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-bold'
                     : isDarkMode
                     ? 'text-slate-300 hover:text-white'
                     : 'text-slate-700 hover:text-black'
                 }`}
-                title="عرض البطاقات والقائمة"
+                title="عرض القائمة"
               >
                 <List className="w-3.5 h-3.5" />
-                <span>بطاقات</span>
+                <span>قائمة</span>
               </button>
             </div>
 
@@ -534,10 +534,10 @@ export const ViewingManagementView: React.FC<ViewingManagementViewProps> = ({
                 });
                 setShowAddModal(true);
               }}
-              className="px-4 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>جدولة معاينة جديدة</span>
+              <span>جدولة معاينة</span>
             </button>
           </div>
         </div>

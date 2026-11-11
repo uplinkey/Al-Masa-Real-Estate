@@ -807,6 +807,19 @@ export function initDatabase() {
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- 33. Password Resets & OTP Verification (استعادة كلمات المرور والأمان)
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+      reset_type TEXT NOT NULL,
+      token_or_code TEXT NOT NULL,
+      target_contact TEXT NOT NULL,
+      attempts INTEGER DEFAULT 0,
+      is_used INTEGER DEFAULT 0,
+      expires_at TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Strategic Performance Indexes
     CREATE INDEX IF NOT EXISTS idx_properties_status ON properties(status);
     CREATE INDEX IF NOT EXISTS idx_properties_district ON properties(district);
@@ -839,6 +852,7 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_proposals_prop ON client_proposals(property_id);
     CREATE INDEX IF NOT EXISTS idx_disputes_client ON source_disputes(client_id);
     CREATE INDEX IF NOT EXISTS idx_disputes_status ON source_disputes(status);
+    CREATE INDEX IF NOT EXISTS idx_pwd_resets_token ON password_resets(token_or_code);
   `;
 
   db.exec(schemaSql);
@@ -871,6 +885,9 @@ export function runSafeMigrations() {
   addColumnIfNotExists('users', 'role_id', 'TEXT REFERENCES system_roles(id)');
   addColumnIfNotExists('users', 'team_id', 'TEXT');
   addColumnIfNotExists('users', 'is_read_only', 'INTEGER DEFAULT 0');
+  addColumnIfNotExists('users', 'must_change_password', 'INTEGER DEFAULT 0');
+  addColumnIfNotExists('users', 'password_changed_at', 'TEXT');
+  addColumnIfNotExists('users', 'data_scope', "TEXT DEFAULT 'DEPARTMENT'");
 
   // 2. Properties Table Columns
   addColumnIfNotExists('properties', 'property_type_code', 'TEXT');
@@ -1139,11 +1156,11 @@ export function seedDepartmentsAndRolesIfEmpty() {
 
   // Update existing users with department & role links if missing
   try {
-    db.prepare("UPDATE users SET department_id = 'dept-mgmt', role_id = 'role-super-admin' WHERE id = 'usr-admin' AND (department_id IS NULL OR role_id IS NULL)").run();
-    db.prepare("UPDATE users SET department_id = 'dept-mgmt', role_id = 'role-exec-dir' WHERE id = 'usr-exec' AND (department_id IS NULL OR role_id IS NULL)").run();
-    db.prepare("UPDATE users SET department_id = 'dept-sales', role_id = 'role-dept-mgr' WHERE id = 'usr-sales-mgr' AND (department_id IS NULL OR role_id IS NULL)").run();
-    db.prepare("UPDATE users SET department_id = 'dept-sales', role_id = 'role-employee' WHERE id = 'usr-sales-agent' AND (department_id IS NULL OR role_id IS NULL)").run();
-    db.prepare("UPDATE users SET department_id = 'dept-fin', role_id = 'role-accountant' WHERE id = 'usr-acct' AND (department_id IS NULL OR role_id IS NULL)").run();
+    db.prepare("UPDATE users SET department_id = 'dept-mgmt', role_id = 'role-super-admin', data_scope = 'ALL' WHERE id = 'usr-admin'").run();
+    db.prepare("UPDATE users SET department_id = 'dept-mgmt', role_id = 'role-exec-dir', data_scope = 'ALL' WHERE id = 'usr-exec'").run();
+    db.prepare("UPDATE users SET department_id = 'dept-sales', role_id = 'role-dept-mgr', data_scope = 'DEPARTMENT' WHERE id = 'usr-sales-mgr'").run();
+    db.prepare("UPDATE users SET department_id = 'dept-sales', role_id = 'role-employee', data_scope = 'OWN' WHERE id = 'usr-sales-agent'").run();
+    db.prepare("UPDATE users SET department_id = 'dept-fin', role_id = 'role-accountant', data_scope = 'ALL' WHERE id = 'usr-acct'").run();
   } catch (e) {
     console.warn('[RBAC Seed] User link update warning:', e);
   }

@@ -72,7 +72,7 @@ export const RBACManagementView: React.FC<RBACManagementViewProps> = ({ isDarkMo
 
   const modulesList = [
     { key: 'properties', label: 'العقارات والوحدات' },
-    { key: 'clients', label: 'سجل العملاء CRM' },
+    { key: 'clients', label: 'سجل العملاء' },
     { key: 'viewings', label: 'المعاينات الميدانية' },
     { key: 'commissions', label: 'العمولات والأرباح' },
     { key: 'financials', label: 'الحسابات والخزينة' },
@@ -337,19 +337,19 @@ export const RBACManagementView: React.FC<RBACManagementViewProps> = ({ isDarkMo
           : 'bg-gradient-to-r from-amber-50/80 via-white to-slate-50 border-amber-200 shadow-sm'
       }`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0">
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <span>نظام إدارة الصلاحيات المركزي (Centralized Enterprise RBAC)</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  Deny by Default مفعل
+              <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                <span>إدارة الصلاحيات والمستخدمين</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  الحماية مفعلة
                 </span>
               </h2>
-              <p className={`text-xs mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                التحكم المركزي التام في أدوار الموظفين، نطاقات الوصول للبيانات، استثناءات الصلاحيات الفردية، وتوثيق سجلات الرقابة
+              <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                التحكم في أدوار الموظفين، نطاقات الوصول للبيانات، وسجلات الرقابة والعمليات.
               </p>
             </div>
           </div>
@@ -501,10 +501,10 @@ export const RBACManagementView: React.FC<RBACManagementViewProps> = ({ isDarkMo
                           isDarkMode ? 'bg-slate-800 border-slate-700 text-amber-300' : 'bg-white border-slate-300 text-amber-700'
                         }`}
                       >
-                        <option value="OWN">عقاراته فقط (OWN)</option>
-                        <option value="TEAM">فريقه (TEAM)</option>
-                        <option value="DEPARTMENT">قسمه (DEPT)</option>
-                        <option value="ALL">كل الشركة (ALL)</option>
+                        <option value="OWN">عقاراته فقط</option>
+                        <option value="TEAM">فريق العمل</option>
+                        <option value="DEPARTMENT">القسم التابع له</option>
+                        <option value="ALL">كامل الشركة</option>
                       </select>
                     )}
                   </div>
@@ -582,10 +582,10 @@ export const RBACManagementView: React.FC<RBACManagementViewProps> = ({ isDarkMo
                                 : 'opacity-40 cursor-not-allowed'
                             }`}
                           >
-                            <option value="OWN">بياناته فقط (OWN)</option>
-                            <option value="TEAM">فريق العمل (TEAM)</option>
-                            <option value="DEPARTMENT">القسم بالكامل (DEPT)</option>
-                            <option value="ALL">جميع بيانات الشركة (ALL)</option>
+                            <option value="OWN">بياناته فقط</option>
+                            <option value="TEAM">فريق العمل</option>
+                            <option value="DEPARTMENT">القسم بالكامل</option>
+                            <option value="ALL">جميع بيانات الشركة</option>
                           </select>
                         </td>
                       </tr>

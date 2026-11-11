@@ -39,6 +39,11 @@ export function setActiveRoleHeader(role: string) {
   currentActiveRole = role;
 }
 
+let currentPreviewRole: string | null = null;
+export function setPreviewRoleHeader(role: string | null) {
+  currentPreviewRole = role;
+}
+
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
@@ -49,6 +54,9 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   }
   if (currentActiveRole) {
     headers.set('x-user-role', currentActiveRole);
+  }
+  if (currentPreviewRole) {
+    headers.set('x-preview-role', currentPreviewRole);
   }
 
   const res = await fetch(url, { ...options, headers });
@@ -81,8 +89,14 @@ export const api = {
         roleTitle: string;
         avatar: string;
         phone: string;
+        departmentId?: string;
+        roleId?: string;
+        dataScope?: string;
+        mustChangePassword?: boolean;
         lastLogin: string;
       };
+      allowedTabs: string[];
+      permissions: Record<string, Record<string, boolean>>;
     }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ identifier, password: passwordPlain }),
@@ -94,7 +108,13 @@ export const api = {
   },
 
   async getMe() {
-    return request<any>('/api/auth/me');
+    return request<{
+      user: any;
+      allowedTabs: string[];
+      permissions: Record<string, Record<string, boolean>>;
+      dataScope: string;
+      isPreviewMode: boolean;
+    }>('/api/auth/me');
   },
 
   async logout() {
@@ -105,8 +125,80 @@ export const api = {
     }
   },
 
+  async changePassword(currentPassword: string, newPassword: string) {
+    return request<{ success: boolean; message: string }>('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
+
+  async requestForgotPassword(identifier: string, resetType: 'email' | 'phone') {
+    return request<{ success: boolean; message: string; resetType: string; targetContact: string; code?: string }>(
+      '/api/auth/forgot-password/request',
+      {
+        method: 'POST',
+        body: JSON.stringify({ identifier, resetType }),
+      }
+    );
+  },
+
+  async resetForgotPassword(tokenOrCode: string, newPassword: string) {
+    return request<{ success: boolean; message: string }>('/api/auth/forgot-password/reset', {
+      method: 'POST',
+      body: JSON.stringify({ tokenOrCode, newPassword }),
+    });
+  },
+
+  async getMyPermissions() {
+    return request<{
+      allowedTabs: string[];
+      permissions: Record<string, Record<string, boolean>>;
+      dataScope: string;
+      isSuperAdmin: boolean;
+    }>('/api/rbac/my-permissions');
+  },
+
   async getUsers() {
     return request<any[]>('/api/auth/users');
+  },
+
+  async createUser(userData: {
+    username: string;
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+    role?: string;
+    roleTitle?: string;
+    departmentId?: string;
+    roleId?: string;
+    dataScope?: string;
+    mustChangePassword?: boolean;
+  }) {
+    return request<{ success: boolean; message: string; userId: string }>('/api/rbac/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  async adminResetPassword(userId: string, newPassword: string, mustChangePassword = true) {
+    return request<{ success: boolean; message: string }>(`/api/rbac/users/${userId}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ newPassword, mustChangePassword }),
+    });
+  },
+
+  async toggleUserStatus(userId: string, active: boolean) {
+    return request<{ success: boolean; message: string }>(`/api/rbac/users/${userId}/toggle-status`, {
+      method: 'POST',
+      body: JSON.stringify({ active }),
+    });
+  },
+
+  async revokeUserSessions(userId: string) {
+    return request<{ success: boolean; message: string }>(`/api/rbac/users/${userId}/revoke-sessions`, {
+      method: 'POST',
+    });
   },
 
   // Audit Logs

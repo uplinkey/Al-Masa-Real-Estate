@@ -1,4 +1,5 @@
-import { db, verifyPassword, generateSessionToken } from './db.js';
+import crypto from 'crypto';
+import { db, hashPassword, verifyPassword, generateSessionToken } from './db.js';
 
 // Type helpers for row transformations
 function parseJsonSafe<T>(val: any, fallback: T): T {
@@ -525,8 +526,17 @@ export function createOwner(data: any) {
 // ----------------------------------------------------
 // 4. CLIENTS & LEADS CRM CRUD
 // ----------------------------------------------------
-export function getClients() {
-  const rows = db.prepare('SELECT * FROM clients ORDER BY created_at DESC').all() as any[];
+export function getClients(user?: any, scope = 'ALL') {
+  let rows: any[] = [];
+  if (user && scope === 'OWN' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    rows = db.prepare(`
+      SELECT * FROM clients
+      WHERE assigned_agent_id = ? OR assigned_agent_name LIKE '%' || ? || '%' OR assigned_marketer_id = ?
+      ORDER BY created_at DESC
+    `).all(user.id, user.name, user.id) as any[];
+  } else {
+    rows = db.prepare('SELECT * FROM clients ORDER BY created_at DESC').all() as any[];
+  }
   return rows.map((r) => {
     const logs = db.prepare('SELECT * FROM communication_logs WHERE client_id = ? ORDER BY date DESC').all(r.id) as any[];
     
@@ -794,8 +804,17 @@ function mapLog(l: any) {
 // ----------------------------------------------------
 // 5. VIEWINGS CRUD
 // ----------------------------------------------------
-export function getViewings() {
-  const rows = db.prepare('SELECT * FROM viewings ORDER BY viewing_date DESC, viewing_time DESC').all() as any[];
+export function getViewings(user?: any, scope = 'ALL') {
+  let rows: any[] = [];
+  if (user && scope === 'OWN' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    rows = db.prepare(`
+      SELECT * FROM viewings
+      WHERE agent_id = ? OR agent_name LIKE '%' || ? || '%' OR assigned_marketer_id = ?
+      ORDER BY viewing_date DESC, viewing_time DESC
+    `).all(user.id, user.name, user.id) as any[];
+  } else {
+    rows = db.prepare('SELECT * FROM viewings ORDER BY viewing_date DESC, viewing_time DESC').all() as any[];
+  }
   return rows.map((r) => {
     let multiIds: string[] = [];
     let multiTitles: string[] = [];
@@ -1085,8 +1104,17 @@ export function updateTask(id: string, updates: any) {
 // ----------------------------------------------------
 // 7. COMMISSIONS CRUD
 // ----------------------------------------------------
-export function getCommissions() {
-  const rows = db.prepare('SELECT * FROM commissions ORDER BY date DESC').all() as any[];
+export function getCommissions(user?: any, scope = 'ALL') {
+  let rows: any[] = [];
+  if (user && scope === 'OWN' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && user.role !== 'ACCOUNTANT') {
+    rows = db.prepare(`
+      SELECT * FROM commissions
+      WHERE employee_name LIKE '%' || ? || '%'
+      ORDER BY date DESC
+    `).all(user.name) as any[];
+  } else {
+    rows = db.prepare('SELECT * FROM commissions ORDER BY date DESC').all() as any[];
+  }
   return rows.map((r) => ({
     id: r.id,
     propertyId: r.property_id,
@@ -1289,14 +1317,38 @@ export function getAuditLogs(limit = 100) {
 // 12. USER AUTHENTICATION & SESSIONS
 // ----------------------------------------------------
 export function loginUser(identifier: string, passwordPlain: string, ipAddress = '127.0.0.1') {
-  // Find by username or email
+  const cleanId = (identifier || '').trim().toLowerCase();
+  // Find by username, email or phone
   const user = db.prepare(`
     SELECT * FROM users
-    WHERE (username = ? OR email = ?) AND active = 1
-  `).get(identifier, identifier) as any;
+    WHERE LOWER(username) = ? OR LOWER(email) = ? OR phone = ?
+  `).get(cleanId, cleanId, identifier) as any;
 
   if (!user) {
+    recordAuditLog({
+      action: 'LOGIN_FAILED',
+      entityType: 'AUTH',
+      details: { identifier, reason: 'المستخدم غير مسجل' },
+      ipAddress,
+    });
     return { success: false, error: 'اسم المستخدم أو البريد الإلكتروني غير صحيح' };
+  }
+
+  // Check if account is suspended / inactive
+  if (user.active === 0) {
+    recordAuditLog({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'LOGIN_BLOCKED_SUSPENDED',
+      entityType: 'AUTH',
+      details: { identifier, reason: 'الحساب موقوف' },
+      ipAddress,
+    });
+    return {
+      success: false,
+      error: 'تم إيقاف هذا الحساب من قِبل إدارة النظام. يرجى مراجعة الإدارة العليا للتفعيل.',
+    };
   }
 
   const isMatch = verifyPassword(passwordPlain, user.password_hash, user.salt);
@@ -1307,7 +1359,7 @@ export function loginUser(identifier: string, passwordPlain: string, ipAddress =
       userRole: user.role,
       action: 'LOGIN_FAILED',
       entityType: 'AUTH',
-      details: { identifier },
+      details: { identifier, reason: 'كلمة المرور غير صحيحة' },
       ipAddress,
     });
     return { success: false, error: 'كلمة المرور غير صحيحة' };
@@ -1330,6 +1382,13 @@ export function loginUser(identifier: string, passwordPlain: string, ipAddress =
     ipAddress,
   });
 
+  const permissionsSummary = getUserEffectivePermissions({
+    ...user,
+    role: user.role,
+    role_id: user.role_id,
+    data_scope: user.data_scope,
+  });
+
   return {
     success: true,
     token,
@@ -1342,8 +1401,15 @@ export function loginUser(identifier: string, passwordPlain: string, ipAddress =
       roleTitle: user.role_title,
       avatar: user.avatar,
       phone: user.phone,
+      departmentId: user.department_id,
+      roleId: user.role_id,
+      dataScope: user.data_scope || 'DEPARTMENT',
+      mustChangePassword: Boolean(user.must_change_password),
+      passwordChangedAt: user.password_changed_at,
       lastLogin: now,
     },
+    allowedTabs: permissionsSummary.allowedTabs,
+    permissions: permissionsSummary.permissions,
   };
 }
 
@@ -1351,7 +1417,7 @@ export function getUserByToken(token: string) {
   if (!token) return null;
   const user = db.prepare(`
     SELECT id, username, email, name, role, role_title, avatar, phone, last_login, created_at,
-           department_id, role_id, team_id, is_read_only
+           department_id, role_id, team_id, is_read_only, must_change_password, password_changed_at, data_scope, active
     FROM users
     WHERE token = ? AND active = 1
   `).get(token) as any;
@@ -1368,10 +1434,14 @@ export function getUserByToken(token: string) {
     roleId: user.role_id,
     teamId: user.team_id,
     isReadOnly: Boolean(user.is_read_only),
+    mustChangePassword: Boolean(user.must_change_password),
+    passwordChangedAt: user.password_changed_at,
+    dataScope: user.data_scope || 'DEPARTMENT',
     avatar: user.avatar,
     phone: user.phone,
     lastLogin: user.last_login,
     createdAt: user.created_at,
+    active: Boolean(user.active),
   };
 }
 
@@ -1379,7 +1449,7 @@ export function getUserById(id: string) {
   if (!id) return null;
   const user = db.prepare(`
     SELECT id, username, email, name, role, role_title, avatar, phone, last_login, created_at,
-           department_id, role_id, team_id, is_read_only
+           department_id, role_id, team_id, is_read_only, must_change_password, password_changed_at, data_scope, active
     FROM users
     WHERE id = ? AND active = 1
   `).get(id) as any;
@@ -1396,10 +1466,14 @@ export function getUserById(id: string) {
     roleId: user.role_id,
     teamId: user.team_id,
     isReadOnly: Boolean(user.is_read_only),
+    mustChangePassword: Boolean(user.must_change_password),
+    passwordChangedAt: user.password_changed_at,
+    dataScope: user.data_scope || 'DEPARTMENT',
     avatar: user.avatar,
     phone: user.phone,
     lastLogin: user.last_login,
     createdAt: user.created_at,
+    active: Boolean(user.active),
   };
 }
 
@@ -1421,10 +1495,395 @@ export function logoutUser(token: string) {
 
 export function getAllUsers() {
   return db.prepare(`
-    SELECT id, username, email, name, role, role_title, avatar, phone, active, last_login, created_at
+    SELECT id, username, email, name, role, role_title, avatar, phone, active, last_login, created_at,
+           must_change_password, password_changed_at, data_scope
     FROM users
     ORDER BY created_at ASC
   `).all() as any[];
+}
+
+// ----------------------------------------------------
+// 12.1 PASSWORD MANAGEMENT & RECOVERY
+// ----------------------------------------------------
+export function changeUserPassword(userId: string, currentPasswordPlain: string, newPasswordPlain: string, ipAddress = '127.0.0.1') {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
+  if (!user) return { success: false, error: 'المستخدم غير موجود' };
+
+  const isMatch = verifyPassword(currentPasswordPlain, user.password_hash, user.salt);
+  if (!isMatch) {
+    recordAuditLog({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'PASSWORD_CHANGE_FAILED',
+      entityType: 'AUTH',
+      details: { reason: 'كلمة المرور الحالية غير صحيحة' },
+      ipAddress,
+    });
+    return { success: false, error: 'كلمة المرور الحالية غير صحيحة' };
+  }
+
+  if (!newPasswordPlain || newPasswordPlain.length < 6) {
+    return { success: false, error: 'كلمة المرور الجديدة يجب أن لا تقل عن 6 أحرف أو أرقام' };
+  }
+
+  const { hash, salt } = hashPassword(newPasswordPlain);
+  const now = new Date().toISOString();
+
+  db.prepare(`
+    UPDATE users SET
+      password_hash = ?,
+      salt = ?,
+      must_change_password = 0,
+      password_changed_at = ?
+    WHERE id = ?
+  `).run(hash, salt, now, userId);
+
+  recordAuditLog({
+    userId: user.id,
+    userName: user.name,
+    userRole: user.role,
+    action: 'PASSWORD_CHANGED_BY_USER',
+    entityType: 'AUTH',
+    entityId: userId,
+    ipAddress,
+  });
+
+  return { success: true, message: 'تم تغيير كلمة المرور بنجاح' };
+}
+
+export function requestPasswordReset(identifier: string, resetType: 'email' | 'phone', ipAddress = '127.0.0.1') {
+  const cleanId = (identifier || '').trim().toLowerCase();
+  const user = db.prepare(`
+    SELECT * FROM users
+    WHERE LOWER(username) = ? OR LOWER(email) = ? OR phone = ?
+  `).get(cleanId, cleanId, identifier) as any;
+
+  if (!user) {
+    return { success: false, error: 'لم يتم العثور على حساب مسجل بهذه البيانات (اسم مستخدم، بريد، أو هاتف)' };
+  }
+
+  if (user.active === 0) {
+    return { success: false, error: 'هذا الحساب موقوف حالياً من قِبل الإدارة. يرجى مراجعة الدعم الإداري.' };
+  }
+
+  const id = `reset-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+  const code = resetType === 'phone'
+    ? Math.floor(100000 + Math.random() * 900000).toString()
+    : crypto.randomBytes(16).toString('hex');
+
+  const targetContact = resetType === 'phone' ? (user.phone || identifier) : (user.email || identifier);
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 mins
+
+  db.prepare(`
+    INSERT INTO password_resets (id, user_id, reset_type, token_or_code, target_contact, attempts, is_used, expires_at)
+    VALUES (?, ?, ?, ?, ?, 0, 0, ?)
+  `).run(id, user.id, resetType, code, targetContact, expiresAt);
+
+  recordAuditLog({
+    userId: user.id,
+    userName: user.name,
+    userRole: user.role,
+    action: 'PASSWORD_RESET_REQUESTED',
+    entityType: 'AUTH',
+    entityId: id,
+    details: { resetType, targetContact },
+    ipAddress,
+  });
+
+  return {
+    success: true,
+    message: resetType === 'email'
+      ? `تم إنشاء رابط استعادة كلمة المرور وإرساله إلى البريد الإلكتروني (${targetContact})`
+      : `تم إرسال كود التحقق السريع (OTP) إلى الهاتف المسجل (${targetContact})`,
+    resetType,
+    targetContact,
+    code, // Provided for instant seamless execution in development
+  };
+}
+
+export function verifyAndResetPassword(tokenOrCode: string, newPasswordPlain: string, ipAddress = '127.0.0.1') {
+  if (!tokenOrCode || !newPasswordPlain) {
+    return { success: false, error: 'كود التحقق أو الرابط وكلمة المرور الجديدة مطلوبان' };
+  }
+
+  if (newPasswordPlain.length < 6) {
+    return { success: false, error: 'كلمة المرور الجديدة يجب أن لا تقل عن 6 أحرف أو أرقام' };
+  }
+
+  const resetRecord = db.prepare(`
+    SELECT r.*, u.username, u.name, u.role
+    FROM password_resets r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.token_or_code = ? AND r.is_used = 0
+    ORDER BY r.created_at DESC
+  `).get(tokenOrCode.trim()) as any;
+
+  if (!resetRecord) {
+    return { success: false, error: 'كود التحقق أو الرابط غير صالح أو تم استخدامه بالفعل' };
+  }
+
+  if (new Date(resetRecord.expires_at) < new Date()) {
+    return { success: false, error: 'انتهت صلاحية كود التحقق (المدة المحددة 15 دقيقة). يرجى طلب كود جديد.' };
+  }
+
+  const { hash, salt } = hashPassword(newPasswordPlain);
+  const now = new Date().toISOString();
+
+  db.prepare(`
+    UPDATE users SET
+      password_hash = ?,
+      salt = ?,
+      must_change_password = 0,
+      password_changed_at = ?,
+      token = NULL
+    WHERE id = ?
+  `).run(hash, salt, now, resetRecord.user_id);
+
+  db.prepare('UPDATE password_resets SET is_used = 1 WHERE id = ?').run(resetRecord.id);
+
+  recordAuditLog({
+    userId: resetRecord.user_id,
+    userName: resetRecord.name,
+    userRole: resetRecord.role,
+    action: 'PASSWORD_RESET_COMPLETED',
+    entityType: 'AUTH',
+    entityId: resetRecord.id,
+    ipAddress,
+  });
+
+  return { success: true, message: 'تم تعيين كلمة المرور الجديدة بنجاح! يمكنك الآن تسجيل الدخول.' };
+}
+
+// ----------------------------------------------------
+// 12.2 ADMIN USER ACCOUNTS MANAGEMENT
+// ----------------------------------------------------
+export function adminCreateUser(data: any, adminUser?: any) {
+  if (!data.username || !data.name || !data.email || !data.password) {
+    return { success: false, error: 'اسم المستخدم، الاسم الكامل، البريد الإلكتروني، وكلمة المرور حقول إلزامية' };
+  }
+
+  const cleanUser = data.username.trim().toLowerCase();
+  const cleanEmail = data.email.trim().toLowerCase();
+
+  const existing = db.prepare('SELECT id FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?').get(cleanUser, cleanEmail);
+  if (existing) {
+    return { success: false, error: 'اسم المستخدم أو البريد الإلكتروني مسجل بالفعل لموظف آخر' };
+  }
+
+  const id = `usr-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+  const { hash, salt } = hashPassword(data.password);
+  const now = new Date().toISOString();
+
+  db.prepare(`
+    INSERT INTO users (
+      id, username, email, password_hash, salt, name, role, role_title, avatar, phone,
+      department_id, role_id, team_id, is_read_only, must_change_password, data_scope, active, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+  `).run(
+    id,
+    cleanUser,
+    cleanEmail,
+    hash,
+    salt,
+    data.name.trim(),
+    data.role || 'SALES_AGENT',
+    data.roleTitle || 'موظف مبيعات',
+    data.name.trim().charAt(0) || 'م',
+    data.phone || null,
+    data.departmentId || 'dept-sales',
+    data.roleId || 'role-employee',
+    data.teamId || null,
+    data.isReadOnly ? 1 : 0,
+    data.mustChangePassword ? 1 : 0,
+    data.dataScope || 'DEPARTMENT',
+    now
+  );
+
+  recordAuditLog({
+    userId: adminUser?.id,
+    userName: adminUser?.name,
+    userRole: adminUser?.role,
+    action: 'ADMIN_CREATE_USER',
+    entityType: 'USER',
+    entityId: id,
+    details: { username: data.username, name: data.name, role: data.role },
+  });
+
+  return { success: true, message: 'تم إنشاء حساب المستخدم بنجاح', userId: id };
+}
+
+export function adminResetUserPassword(targetUserId: string, newPasswordPlain: string, mustChangePassword: boolean, adminUser?: any) {
+  const target = db.prepare('SELECT * FROM users WHERE id = ?').get(targetUserId) as any;
+  if (!target) return { success: false, error: 'المستخدم غير موجود' };
+
+  if (target.id === 'usr-admin' && adminUser?.id !== 'usr-admin') {
+    return { success: false, error: 'لا يمكن لغير المدير العام إعادة تعيين كلمة مرور الحساب الإداري الرئيسي' };
+  }
+
+  if (!newPasswordPlain || newPasswordPlain.length < 6) {
+    return { success: false, error: 'كلمة المرور يجب أن لا تقل عن 6 أحرف أو أرقام' };
+  }
+
+  const { hash, salt } = hashPassword(newPasswordPlain);
+  const now = new Date().toISOString();
+
+  db.prepare(`
+    UPDATE users SET
+      password_hash = ?,
+      salt = ?,
+      must_change_password = ?,
+      password_changed_at = ?,
+      token = NULL
+    WHERE id = ?
+  `).run(hash, salt, mustChangePassword ? 1 : 0, now, targetUserId);
+
+  recordAuditLog({
+    userId: adminUser?.id,
+    userName: adminUser?.name,
+    userRole: adminUser?.role,
+    action: 'ADMIN_RESET_PASSWORD',
+    entityType: 'USER',
+    entityId: targetUserId,
+    details: { targetUsername: target.username, mustChangePassword },
+  });
+
+  return { success: true, message: `تمت إعادة تعيين كلمة مرور المستخدم (${target.name}) بنجاح` };
+}
+
+export function adminToggleUserStatus(targetUserId: string, active: boolean, adminUser?: any) {
+  if (targetUserId === 'usr-admin') {
+    return { success: false, error: 'لا يمكن قانوناً تعطيل حساب المدير العام الرئيسي' };
+  }
+
+  const target = db.prepare('SELECT * FROM users WHERE id = ?').get(targetUserId) as any;
+  if (!target) return { success: false, error: 'المستخدم غير موجود' };
+
+  db.prepare(`
+    UPDATE users SET
+      active = ?,
+      token = CASE WHEN ? = 0 THEN NULL ELSE token END
+    WHERE id = ?
+  `).run(active ? 1 : 0, active ? 1 : 0, targetUserId);
+
+  recordAuditLog({
+    userId: adminUser?.id,
+    userName: adminUser?.name,
+    userRole: adminUser?.role,
+    action: active ? 'ADMIN_ACTIVATE_USER' : 'ADMIN_SUSPEND_USER',
+    entityType: 'USER',
+    entityId: targetUserId,
+    details: { targetUsername: target.username, active },
+  });
+
+  return {
+    success: true,
+    message: active ? `تم تفعيل حساب (${target.name}) بنجاح` : `تم إيقاف حساب (${target.name}) بنجاح وإلغاء جلساته النشطة`,
+  };
+}
+
+export function adminRevokeUserSessions(targetUserId: string, adminUser?: any) {
+  const target = db.prepare('SELECT * FROM users WHERE id = ?').get(targetUserId) as any;
+  if (!target) return { success: false, error: 'المستخدم غير موجود' };
+
+  db.prepare('UPDATE users SET token = NULL WHERE id = ?').run(targetUserId);
+
+  recordAuditLog({
+    userId: adminUser?.id,
+    userName: adminUser?.name,
+    userRole: adminUser?.role,
+    action: 'ADMIN_REVOKE_SESSIONS',
+    entityType: 'USER',
+    entityId: targetUserId,
+    details: { targetUsername: target.username },
+  });
+
+  return { success: true, message: `تم إلغاء جميع الجلسات النشطة للمستخدم (${target.name}) بنجاح` };
+}
+
+// ----------------------------------------------------
+// 12.3 USER EFFECTIVE PERMISSIONS & NAVIGATION TABS
+// ----------------------------------------------------
+export function getUserEffectivePermissions(user: any) {
+  if (!user || user.active === 0) {
+    return {
+      allowedTabs: ['public_website'],
+      permissions: {},
+      dataScope: 'OWN',
+    };
+  }
+
+  const isSuperAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role_id === 'role-super-admin';
+  const isExecDir = user.role === 'GENERAL_MANAGER' || user.role_id === 'role-exec-dir';
+
+  if (isSuperAdmin || isExecDir) {
+    return {
+      allowedTabs: [
+        'dashboard',
+        'properties',
+        'clients',
+        'pipeline',
+        'owners',
+        'viewings',
+        'marketing',
+        'partners',
+        'tasks',
+        'accounting',
+        'rbac',
+        'ai_assistant',
+        'public_website',
+      ],
+      dataScope: 'ALL',
+      isSuperAdmin: true,
+      permissions: {
+        properties: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+        clients: { view: true, create: true, edit: true, delete: true, export: true },
+        viewings: { view: true, create: true, edit: true, delete: true },
+        commissions: { view: true, create: true, edit: true, approve: true, view_financials: true },
+        financials: { view: true, create: true, edit: true },
+        tasks: { view: true, create: true, edit: true },
+        marketing: { view: true, create: true, edit: true },
+        roles: { view: true, manage_permissions: true, manage_employees: true },
+        partners: { view: true, create: true, edit: true },
+      },
+    };
+  }
+
+  const modules = ['properties', 'clients', 'viewings', 'commissions', 'tasks', 'marketing', 'roles', 'reports', 'financials'];
+  const actions = ['view', 'create', 'edit', 'delete', 'approve', 'view_financials', 'manage_employees', 'manage_permissions'];
+
+  const permsMap: Record<string, Record<string, boolean>> = {};
+  for (const m of modules) {
+    permsMap[m] = {};
+    for (const a of actions) {
+      const p = getUserPermission(user, m, a);
+      permsMap[m][a] = p.allowed;
+    }
+  }
+
+  const allowedTabs: string[] = ['dashboard'];
+
+  if (permsMap.properties?.view) allowedTabs.push('properties');
+  if (permsMap.clients?.view) {
+    allowedTabs.push('clients');
+    allowedTabs.push('pipeline');
+  }
+  if (permsMap.properties?.view || permsMap.clients?.view) allowedTabs.push('owners');
+  if (permsMap.viewings?.view) allowedTabs.push('viewings');
+  if (permsMap.marketing?.view || user.department_id === 'dept-sales') allowedTabs.push('marketing');
+  if (permsMap.commissions?.view || user.department_id === 'dept-ext') allowedTabs.push('partners');
+  if (permsMap.tasks?.view) allowedTabs.push('tasks');
+  if (permsMap.commissions?.view_financials || permsMap.financials?.view || user.role === 'ACCOUNTANT') allowedTabs.push('accounting');
+  if (permsMap.roles?.manage_permissions || permsMap.roles?.manage_employees) allowedTabs.push('rbac');
+  if (user.role !== 'ACCOUNTANT') allowedTabs.push('ai_assistant');
+  allowedTabs.push('public_website');
+
+  return {
+    allowedTabs,
+    dataScope: user.data_scope || 'DEPARTMENT',
+    isSuperAdmin: false,
+    permissions: permsMap,
+  };
 }
 
 // ----------------------------------------------------
@@ -2146,6 +2605,7 @@ export function getAllUsersWithRoles() {
   const rows = db.prepare(`
     SELECT u.id, u.username, u.email, u.name, u.role, u.role_title, u.avatar, u.phone,
            u.active, u.last_login, u.created_at, u.department_id, u.role_id, u.team_id, u.is_read_only,
+           u.must_change_password, u.password_changed_at, u.data_scope,
            d.name as department_name, r.name as custom_role_name, r.hierarchy_level
     FROM users u
     LEFT JOIN departments d ON u.department_id = d.id
@@ -2165,6 +2625,9 @@ export function getAllUsersWithRoles() {
     roleId: u.role_id,
     teamId: u.team_id,
     isReadOnly: Boolean(u.is_read_only),
+    mustChangePassword: Boolean(u.must_change_password),
+    passwordChangedAt: u.password_changed_at,
+    dataScope: u.data_scope || 'DEPARTMENT',
     avatar: u.avatar,
     phone: u.phone,
     active: Boolean(u.active),

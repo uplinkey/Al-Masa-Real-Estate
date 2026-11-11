@@ -6,9 +6,10 @@ interface TaskManagementViewProps {
   tasks: AppTask[];
   onAddTask: (task: Partial<AppTask>) => void;
   onUpdateTaskStatus: (id: string, status: any) => void;
+  isDarkMode?: boolean;
 }
 
-export const TaskManagementView: React.FC<TaskManagementViewProps> = ({ tasks, onAddTask, onUpdateTaskStatus }) => {
+export const TaskManagementView: React.FC<TaskManagementViewProps> = ({ tasks, onAddTask, onUpdateTaskStatus, isDarkMode = true }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState<Partial<AppTask>>({
     title: '',
@@ -28,23 +29,23 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({ tasks, o
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            <CheckSquare className="w-6 h-6 text-amber-400" />
-            <span>نظام إسناد ومتابعة المهام اليومية</span>
+          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <CheckSquare className="w-5 h-5 text-amber-400" />
+            <span>المهام والمتابعة</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            إسناد المهام للموظفين، تحديد الأولويات والمواعيد النهائية، ومتابعة إنجاز الأعمال اليومية لشركة الماسة.
+            إسناد ومتابعة مهام فريق العمل وتحديد الأولويات والمواعيد النهائية.
           </p>
         </div>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2"
+          className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 self-start sm:self-center"
         >
           <Plus className="w-4 h-4" />
-          <span>إنشاء مهمة جديدة</span>
+          <span>إضافة مهمة</span>
         </button>
       </div>
 

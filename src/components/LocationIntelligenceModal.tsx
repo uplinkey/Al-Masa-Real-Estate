@@ -134,7 +134,7 @@ export const LocationIntelligenceModal: React.FC<LocationIntelligenceModalProps>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-white text-base">التحليل الجغرافي الذكي للعقار والخدمات المحيطة</h3>
+                <h3 className="font-bold text-white text-base">التحليل الجغرافي والخدمات المحيطة</h3>
                 {intel && (
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${

@@ -5,9 +5,10 @@ import { Property } from '../types';
 interface QRCodeModalProps {
   property: Property | null;
   onClose: () => void;
+  isDarkMode?: boolean;
 }
 
-export const QRCodeModal: React.FC<QRCodeModalProps> = ({ property, onClose }) => {
+export const QRCodeModal: React.FC<QRCodeModalProps> = ({ property, onClose, isDarkMode = true }) => {
   if (!property) return null;
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(

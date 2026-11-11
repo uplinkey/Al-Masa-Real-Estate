@@ -5,9 +5,10 @@ import { Property, CustomerLead } from '../types';
 interface AIAssistantViewProps {
   properties: Property[];
   clients: CustomerLead[];
+  isDarkMode?: boolean;
 }
 
-export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ properties, clients }) => {
+export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ properties, clients, isDarkMode = true }) => {
   const [activeAction, setActiveAction] = useState<
     'GENERATE_DESCRIPTION' | 'GENERATE_SOCIAL_POST' | 'GENERATE_WHATSAPP' | 'ESTIMATE_PRICE'
   >('GENERATE_DESCRIPTION');
@@ -60,18 +61,15 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ properties, cl
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-amber-950 border border-blue-500/30 rounded-2xl p-6 shadow-xl">
+      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-amber-950 border border-blue-500/30 rounded-2xl p-4 sm:p-5 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-bold">
-            <Sparkles className="w-6 h-6 animate-spin" />
+          <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold shrink-0">
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
-              Gemini 3.6 Flash Engine
-            </span>
-            <h2 className="text-xl font-black text-white mt-1">المساعد الذكي للتسويق والمبيعات العقارية</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white">المساعد الذكي للتسويق والمبيعات</h2>
             <p className="text-xs text-slate-300 mt-0.5">
-              توليد إعلانات فيس بوك وانستجرام احترافية، وصف عقاري فخم، رسائل مبيعات واتساب موجهة، وتقييم السعر العادل للسوق المصري.
+              صياغة الأوصاف التسويقية للوحدات ورسائل التواصل الإعلاني وتقدير الأسعار.
             </p>
           </div>
         </div>
