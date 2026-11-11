@@ -1,0 +1,6 @@
+{
+  "name": "الماسة للتسويق العقاري - Almasa Real Estate CRM & ERP",
+  "description": "النظام الشامل لإدارة العقارات، المبيعات، عملاء التسويق، العمولات، والحسابات لشركة الماسة للتسويق العقاري بمصر",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
